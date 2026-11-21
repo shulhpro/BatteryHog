@@ -135,6 +135,10 @@ final class BatteryHogBackend {
             case ("GET", "/api/stats"):
                 response = BackendResponse(status: 200, body: self.buildStats())
                 shouldRefreshSlowData = true
+            case ("GET", "/api/memory"):
+                response = BackendResponse(status: 200, body: MemoryGuardBridge.shared.fullAnalysis())
+            case ("GET", "/api/memory/report"):
+                response = BackendResponse(status: 200, body: ["markdown": MemoryGuardBridge.shared.buildReportMarkdown(hours: 72.0)])
             case ("GET", "/api/history"):
                 let range = query.first(where: { $0.name == "range" })?.value
                 let cached = self.slowStore.historySnapshot()
@@ -415,31 +419,30 @@ final class BatteryHogBackend {
     }
 
     private func memory() -> [String: Any] {
-        let vm = SystemCommand.output("/usr/bin/vm_stat", timeout: 5)
-        func pages(_ label: String) -> UInt64 {
-            UInt64(regexFirst(NSRegularExpression.escapedPattern(for: label) + #":\s+(\d+)\."#,
-                              in: vm) ?? "") ?? 0
+        let snap = MemoryGuardBridge.shared.currentSnapshot()
+        let totalMB = snap["total_mb"] as? Int ?? 8192
+        let usedMB = snap["used_mb"] as? Int ?? 0
+        let freeMB = snap["free_mb"] as? Int ?? 0
+        let compMB = snap["compressed_mb"] as? Int ?? 0
+        let wiredMB = snap["wired_mb"] as? Int ?? 0
+        let swapUsed = snap["swap_used_mb"] as? Int ?? 0
+        let status = snap["pressure_status"] as? String ?? "NORMAL"
+        
+        let pressure: String
+        switch status {
+        case "CRITICAL": pressure = "high"
+        case "WARNING": pressure = "elevated"
+        default: pressure = "normal"
         }
-        let freePages = pages("Pages free") + pages("Pages speculative")
-        let compressedPages = pages("Pages occupied by compressor")
-        let wiredPages = pages("Pages wired down")
-        let freeBytes = freePages * UInt64(pageSize)
-        let compressedBytes = compressedPages * UInt64(pageSize)
-        let wiredBytes = wiredPages * UInt64(pageSize)
-        let usedBytes = totalMemory > freeBytes ? totalMemory - freeBytes : 0
-        let swapOutput = SystemCommand.output("/usr/sbin/sysctl", ["vm.swapusage"], timeout: 4)
-        let swap = Double(regexFirst(#"used = ([\d.]+)M"#, in: swapOutput) ?? "") ?? 0
-        let freeMB = Double(freeBytes) / 1_048_576
-        let pressure = (freeMB < 1500 || swap > 1024) ? "high"
-            : ((freeMB < 4000 || swap > 256) ? "elevated" : "normal")
-        let gb = 1_073_741_824.0
+        
         return [
-            "total_gb": rounded(Double(totalMemory) / gb),
-            "used_gb": rounded(Double(usedBytes) / gb),
-            "free_gb": rounded(Double(freeBytes) / gb, places: 2),
-            "compressed_gb": rounded(Double(compressedBytes) / gb),
-            "wired_gb": rounded(Double(wiredBytes) / gb),
-            "swap_used_mb": Int(swap.rounded()), "pressure": pressure
+            "total_gb": rounded(Double(totalMB) / 1024.0),
+            "used_gb": rounded(Double(usedMB) / 1024.0),
+            "free_gb": rounded(Double(freeMB) / 1024.0, places: 2),
+            "compressed_gb": rounded(Double(compMB) / 1024.0),
+            "wired_gb": rounded(Double(wiredMB) / 1024.0),
+            "swap_used_mb": swapUsed,
+            "pressure": pressure
         ]
     }
 
