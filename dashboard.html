@@ -981,7 +981,7 @@
     <div class="loading-screen" id="loadingScreen" role="status" aria-live="polite" aria-label="Загрузка данных Battery Hog">
       <div class="loading-head">
         <div class="loading-spinner" aria-hidden="true"></div>
-        <div><div class="loading-title" id="loadingTitle">Анализ вашего Mac</div><div class="loading-sub" id="loadingSub">Батарея, память, процессы, нагрузки и&amp; активность в режиме сна</div></div>
+        <div><div class="loading-title" id="loadingTitle">Анализ вашего Mac</div><div class="loading-sub" id="loadingSub">Батарея, память, процессы, нагрузки и активность в режиме сна</div></div>
       </div>
       <div class="loading-stack" aria-hidden="true">
         <div class="loading-card wide"><span class="skel skel-label"></span><span class="skel skel-line long"></span><span class="skel skel-line med"></span></div>
@@ -1895,7 +1895,7 @@ function renderWorkloads(){
     const isQueued=item.state==="queued";
     const since=isQueued?item.requested_at:item.started_at;
     const age=since?fmtDuration(Date.now()/1000-since):"now";
-    return `<div class="gate-entry"><span class="gate-dot ${isQueued?"queued":"""></span><div class="gate-info"><div class="gate-name">${esc(item.label||"Команда")}</div><div class="gate-sub">${esc(item.project||"")}${item.cwd?" · "+esc(item.cwd):""}</div></div><span class="gate-age">${isQueued?"в очереди ":"выполняется "}${age}</span></div>`;
+    return `<div class="gate-entry"><span class="gate-dot ${isQueued?"queued":""}"></span><div class="gate-info"><div class="gate-name">${esc(item.label||"Команда")}</div><div class="gate-sub">${esc(item.project||"")}${item.cwd?" · "+esc(item.cwd):""}</div></div><span class="gate-age">${isQueued?"в очереди ":"выполняется "}${age}</span></div>`;
   }).join(""):`<div class="foot" style="margin-top:10px">${dev.enabled?"Активных управляемых команд нет. Агенты продолжают редактирование и рассуждение параллельно.":"Шлюз установлен, но неактивен до включения Режима агента."}</div>`;
 }
 
