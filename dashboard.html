@@ -420,8 +420,8 @@
   .mini-row .mt{flex:1;min-width:0}
   .mini-row .mname{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .mini-row .msub{font-size:11px;color:var(--txt-2);font-variant-numeric:tabular-nums;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .lvl-wrap{display:flex;align-items:center;gap:7px;flex-shrink:0}
-  .lvl-tag{font-size:11px;font-weight:600;width:38px;text-align:right;font-variant-numeric:tabular-nums}
+  .lvl-wrap{display:flex;align-items:center;gap:8px;flex-shrink:0}
+  .lvl-tag{font-size:11px;font-weight:600;width:56px;min-width:56px;text-align:right;font-variant-numeric:tabular-nums}
   .lvl-bar{width:46px;height:5px;border-radius:3px;background:var(--track);overflow:hidden;flex-shrink:0}
   .lvl-bar i{display:block;height:100%;border-radius:3px;transition:width .5s ease}
 
@@ -1000,7 +1000,7 @@
         <div class="current-stage-grid">
           <div class="card current-energy" id="battCard">
             <div class="hero-top">
-              <div class="sec-title">Прогноз разряда</div>
+              <div class="sec-title" id="batSecTitle">Прогноз работы</div>
               <span id="batState"><span class="pill discharging">—</span></span>
             </div>
             <div class="current-forecast">
@@ -1385,7 +1385,7 @@ function fmtDuration(sec){ sec=Math.max(0,Number(sec)||0); if(sec>=86400) return
 let toastTimer=null;
 function toast(message){ const el=$("#toast"); if(!el) return; el.textContent=message; el.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove("show"),2200); }
 function colorAt(level){ return level==="high"?"var(--red)":level==="med"?"var(--amber)":"var(--green)"; }
-function levelLabel(level){ return level==="high"?"Высокий":level==="med"?"Med":"Low"; }
+function levelLabel(level){ return level==="high"?"Высокий":level==="med"?"Средний":"Низкий"; }
 function fmtW(v){ const n=Number(v); return isFinite(n)?n.toFixed(2):"—"; }
 function appColor(name){ let h=0; for(let i=0;i<name.length;i++) h=(h*31+name.charCodeAt(i))>>>0; return palette[h%palette.length]; }
 function processKey(p){ return String(p.name||"")+"\u241f"+String(p.path||""); }
@@ -1469,11 +1469,11 @@ function renderCurrentSummary(){
     const level=dev.level||"low"; signal.className="pill "+(level==="high"?"high":level==="med"?"elevated":"normal"); signal.textContent=level==="high"?"Тяжёлая":level==="med"?"Активная":"Лёгкая";
   }else if(top){
     ico.innerHTML=appIconHTML(top,46);
-    title.textContent=top.name+" is working hardest";
-    copy.textContent="It is using "+Math.round(top.cpu||0)+"% CPU and "+fmtMem(top.mem_mb)+" of memory in the latest sample.";
-    meta.textContent=levelLabel(top.level)+" estimated impact · "+Math.round(top.cpu||0)+"% cpu";
+    title.textContent=top.name+" нагружает систему больше всего";
+    copy.textContent="Использует "+Math.round(top.cpu||0)+"% ЦП и "+fmtMem(top.mem_mb)+" памяти по последним замерам.";
+    meta.textContent=levelLabel(top.level)+" расход · "+Math.round(top.cpu||0)+"% ЦП";
     action.textContent="Все приложения"; action.dataset.jump="processes";
-    signal.className="pill "+(top.level==="high"?"high":top.level==="med"?"elevated":"normal"); signal.textContent=levelLabel(top.level)+" estimated impact";
+    signal.className="pill "+(top.level==="high"?"high":top.level==="med"?"elevated":"normal"); signal.textContent=levelLabel(top.level);
   }else{
     ico.innerHTML='<span class="work-glyph" style="width:46px;height:46px">✓</span>';
     title.textContent="Ваш Mac работает без нагрузки";
@@ -1482,10 +1482,10 @@ function renderCurrentSummary(){
     signal.className="pill normal"; signal.textContent="Спокойный";
   }
   const projects=Number(dev.projects)||0, workers=Number(dev.active_workers||dev.workers)||0;
-  $("#telemetryDev").textContent=projects+" project"+(projects===1?"":"s");
-  $("#telemetryWorkers").textContent=workers?workers+" active worker"+(workers===1?"":"s"):"Тяжёлых задач не обнаружено";
+  $("#telemetryDev").textContent=projects+" "+(projects===1?"проект":"проектов");
+  $("#telemetryWorkers").textContent=workers?workers+" активных задач":"Тяжёлых задач не обнаружено";
   $("#telemetryTopApp").textContent=top?top.name:"Тихий";
-  $("#telemetryTopCpu").textContent=top?Math.round(top.cpu||0)+"% CPU · "+levelLabel(top.level)+" estimated impact":"Расход в пределах нормы";
+  $("#telemetryTopCpu").textContent=top?Math.round(top.cpu||0)+"% ЦП · "+levelLabel(top.level):"Расход в пределах нормы";
 }
 const boltSVG='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>';
 const checkSVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
@@ -1720,14 +1720,35 @@ function renderBattery(){
   const pillClass=low?"high":st;
   $("#batState").innerHTML=`<span class="pill ${pillClass}">${stIco}${stText}</span>`;
   $("#batSource").textContent=b.on_ac?"Адаптер питания":"Аккумулятор";
-  if(b.time && (st==="charging"||st==="discharging")){ $("#batTimeK").textContent=st==="charging"?"Прогноз зарядки":"Прогноз разряда"; $("#batTime").textContent=b.time; $("#batForecastSuffix").textContent=st==="charging"?" until full":" left"; }
-  else{ $("#batTimeK").textContent="Текущее состояние"; $("#batTime").textContent= st==="charged"?"Полностью заряжен":st==="ac"?"От адаптера":st==="charging"?"Зарядка...":"Расчёт..."; $("#batForecastSuffix").textContent=""; }
+  const secTitle=$("#batSecTitle")||$("#battCard .sec-title");
+  if(secTitle){
+    secTitle.textContent=st==="charging"?"Зарядка аккумулятора":(st==="charged"?"Аккумулятор заряжен":"Расход аккумулятора");
+  }
+  if(b.time && (st==="charging"||st==="discharging")){
+    $("#batTimeK").textContent=st==="charging"?"До полной зарядки":"Осталось времени";
+    $("#batTime").textContent=b.time;
+    $("#batForecastSuffix").textContent=st==="charging"?" до 100%":" осталось";
+  } else {
+    $("#batTimeK").textContent="Состояние";
+    $("#batTime").textContent=st==="charged"?"Полностью заряжен":st==="ac"?"Питание от сети":st==="charging"?"Зарядка…":"Расчёт…";
+    $("#batForecastSuffix").textContent="";
+  }
   const pw=state.data.power||{};
   if(pw.watts!=null){
-    if(pw.direction==="charging"){ $("#batPowerK").textContent="Зарядка при"; $("#batPower").textContent=pw.watts.toFixed(1)+" W"; }
-    else if(pw.direction==="ac"){ $("#batPowerK").textContent="Потребление мощности"; $("#batPower").textContent=pw.watts<0.5?"От адаптера":pw.watts.toFixed(1)+" W"; }
-    else { $("#batPowerK").textContent="Потребление мощности"; $("#batPower").textContent=pw.watts.toFixed(1)+" W"; }
-  } else { $("#batPowerK").textContent="Потребление мощности"; $("#batPower").textContent="—"; }
+    if(pw.direction==="charging"){
+      $("#batPowerK").textContent="Мощность зарядки";
+      $("#batPower").textContent=pw.watts.toFixed(1)+" Вт";
+    } else if(pw.direction==="ac"){
+      $("#batPowerK").textContent="Потребление";
+      $("#batPower").textContent=pw.watts<0.5?"От сети":pw.watts.toFixed(1)+" Вт";
+    } else {
+      $("#batPowerK").textContent="Текущее потребление";
+      $("#batPower").textContent=pw.watts.toFixed(1)+" Вт";
+    }
+  } else {
+    $("#batPowerK").textContent="Текущее потребление";
+    $("#batPower").textContent="—";
+  }
   $("#batSvg").setAttribute("aria-label",`Аккумулятор: ${pct}%, ${stText}`);
 }
 
@@ -1781,7 +1802,7 @@ function renderTopUsers(){
   $("#topUsers").innerHTML=top.map((p,i)=>{
     const w=Math.max(6,Math.round((p.score||0)/maxScore*100));
     const action=p.protected
-      ? `<span class="sys-tag">${lockSVG}System</span>`
+      ? `<span class="sys-tag">${lockSVG}Система</span>`
       : `<button class="btn quit" data-act="kill" data-name="${esc(p.name)}" data-path="${esc(p.path||"")}" data-bundle="${p.bundle?1:0}" data-pids="${esc(JSON.stringify(p.pids||[]))}">Завершить</button>`;
     return `<div class="mini-row">
       <span class="rank">${i+1}</span>
@@ -2304,7 +2325,7 @@ function updateProcRow(el,p,i,maxCpu,maxMem,maxScore){
   const scCol=colorAt(p.level);
   el.style.setProperty("--row-signal",scCol);
   const rk=el.querySelector(".rank"); rk.textContent=i+1; rk.style.color=i<3?scCol:"var(--txt-2)";
-  el.querySelector(".nm .s").textContent=p.procs>1?p.procs+" processes":"1 process";
+  el.querySelector(".nm .s").textContent=p.procs>1?p.procs+" процессов":"1 процесс";
   const ii=el.querySelector(".m-imp i"); ii.style.width=Math.max(3,Math.round((p.score||0)/maxScore*100))+"%"; ii.style.background=scCol;
   const iv=el.querySelector(".m-imp .mv"); iv.textContent=levelLabel(p.level); iv.style.color=scCol;
   el.querySelector(".m-cpu i").style.width=Math.max(3,Math.round((p.cpu||0)/maxCpu*100))+"%";
@@ -2314,7 +2335,7 @@ function updateProcRow(el,p,i,maxCpu,maxMem,maxScore){
   const act=el.querySelector(".act-cell"), sys=p.protected?"1":"0";
   if(el.dataset.sys!==sys){
     el.dataset.sys=sys;
-    act.innerHTML=p.protected?`<span class="sys-tag">${lockSVG}System</span>`
+    act.innerHTML=p.protected?`<span class="sys-tag">${lockSVG}Система</span>`
       :`<button class="btn quit" data-act="kill" data-name="${esc(p.name)}">Завершить</button>`;
   }
   if(!p.protected){ const qb=act.querySelector(".quit"); if(qb){ qb.dataset.path=p.path||""; qb.dataset.bundle=p.bundle?1:0; qb.dataset.pids=JSON.stringify(p.pids||[]); } }
