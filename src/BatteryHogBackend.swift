@@ -1060,7 +1060,7 @@ final class BatteryHogBackend {
                       let cpu = (process["cpu"] as? NSNumber)?.doubleValue, cpu >= 95 else { continue }
                 hot.insert(name)
                 if !hotProcesses.contains(name) {
-                    notifications.append(("Высокая нагрузка на процессор", "\(name) использует \(Int(cpu.rounded()))% CPU."))
+                    notifications.append(("Высокая нагрузка на процессор", "\(name) использует \(Int(cpu.rounded()))% ЦП."))
                 }
             }
             hotProcesses = hot
@@ -1071,7 +1071,7 @@ final class BatteryHogBackend {
                     let summary = processData["summary"] as? [String: Any] ?? [:]
                     let active = (summary["active_workers"] as? NSNumber)?.intValue ?? 0
                     let projects = (summary["projects"] as? NSNumber)?.intValue ?? 0
-                    notifications.append(("Высокий расход батареи",
+                    notifications.append(("Высокий расход аккумулятора",
                         "\(Int(watts.rounded())) Вт: \(active) активных процессов разработки в \(projects) проектах."))
                     highDrawAlerted = true
                 }

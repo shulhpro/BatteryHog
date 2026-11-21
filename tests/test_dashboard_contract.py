@@ -206,9 +206,9 @@ class DashboardContractTests(unittest.TestCase):
         self.assertIn("img-src appicon: data:", policies[0])
 
     def test_app_impact_is_clearly_labeled_as_an_estimate(self):
-        self.assertIn("Оценка влияния", self.html)
-        self.assertIn("Относительная оценка CPU + памяти", self.html)
-        self.assertIn("не ватты на каждое приложение", self.html)
+        self.assertIn("Оценка энергопотребления", self.html)
+        self.assertIn("Относительный расчёт по нагрузке на процессор и память", self.html)
+        self.assertIn("не прямое измерение в ваттах", self.html)
         for misleading_label in (
             "Energy impact", "Energy leaders", "Ranked by impact",
             "biggest battery user", "Biggest draws right now", '+" impact"',
@@ -294,7 +294,7 @@ class DashboardContractTests(unittest.TestCase):
         self.assertEqual(switch.get("role"), "switch")
         self.assertEqual(switch.get("tabindex"), "0")
         self.assertEqual(switch.get("aria-checked"), "false")
-        self.assertIn("Выключено по умолчанию", self.html)
+        self.assertIn("По умолчанию выключено", self.html)
 
         for name in (
             "postUpdateAction", "requestUpdateState", "renderSoftwareUpdates",

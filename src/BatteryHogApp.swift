@@ -125,7 +125,7 @@ final class UpdateCoordinator: NSObject, SPUUpdaterDelegate {
     func setAutomaticChecks(_ enabled: Bool) {
         guard installMethod == "direct", let updater = updaterController?.updater else { return }
         updater.automaticallyChecksForUpdates = enabled
-        message = enabled ? "Automatic update checks are on." : "Automatic update checks are off."
+        message = enabled ? "Автоматическая проверка обновлений включена." : "Автоматическая проверка обновлений выключена."
         errorMessage = nil
         pushState()
     }
@@ -134,16 +134,16 @@ final class UpdateCoordinator: NSObject, SPUUpdaterDelegate {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setString(Self.homebrewCommand, forType: .string)
-        message = "Homebrew upgrade command copied."
+        message = "Команда обновления через Homebrew скопирована."
         errorMessage = nil
         pushState()
     }
 
     func showHomebrewInstructions() {
         let alert = NSAlert()
-        alert.messageText = "Updates are managed by Homebrew"
-        alert.informativeText = "Run this command in Terminal to update Battery Hog:\n\n\(Self.homebrewCommand)"
-        alert.addButton(withTitle: "Copy Command")
+        alert.messageText = "Обновления управляются через Homebrew"
+        alert.informativeText = "Выполните команду в Терминале для обновления Battery Hog:\n\n\(Self.homebrewCommand)"
+        alert.addButton(withTitle: "Скопировать команду")
         alert.addButton(withTitle: "OK")
         if alert.runModal() == .alertFirstButtonReturn { copyHomebrewCommand() }
     }
@@ -188,7 +188,7 @@ final class UpdateCoordinator: NSObject, SPUUpdaterDelegate {
         status = "updateAvailable"
         latestVersion = item.displayVersionString
         lastChecked = Date()
-        message = "Version \(item.displayVersionString) is available."
+        message = "Доступна версия \(item.displayVersionString)."
         errorMessage = nil
         pushState()
     }
@@ -198,7 +198,7 @@ final class UpdateCoordinator: NSObject, SPUUpdaterDelegate {
         latestVersion = nil
         lastChecked = Date()
         let detail = error.localizedDescription.trimmingCharacters(in: .whitespacesAndNewlines)
-        message = detail.isEmpty ? "No update is available for this Mac." : detail
+        message = detail.isEmpty ? "Для этого Mac нет доступных обновлений." : detail
         errorMessage = nil
         pushState()
     }
@@ -501,7 +501,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         if mbOn("dev", false) {
             let projects = dev["projects"] as? Int ?? 0
             let heavy = dev["heavy_workers"] as? Int ?? 0
-            if projects > 0 { titleParts.append("\(heavy) jobs · \(projects) dev") }
+            if projects > 0 { titleParts.append("\(heavy) задач · \(projects) проектов") }
         }
         statusItem.button?.title = titleParts.isEmpty ? "" : " " + titleParts.joined(separator: " · ")
 
@@ -511,10 +511,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         // battery summary line
         var parts: [String] = []
         if let pct = pct { parts.append("\(pct)%") }
-        parts.append(onAC ? (direction == "charging" ? "Charging" : "Plugged in") : "On battery")
-        if let w = watts { parts.append(String(format: "%.1f W", w)) }
+        parts.append(onAC ? (direction == "charging" ? "Заряжается" : "От сети") : "От аккумулятора")
+        if let w = watts { parts.append(String(format: "%.1f Вт", w)) }
         if let t = timeStr, direction == "charging" || direction == "discharging" {
-            parts.append(t + (direction == "charging" ? " to full" : " left"))
+            parts.append(t + (direction == "charging" ? " до 100%" : " осталось"))
         }
         let summary = NSMenuItem(title: parts.joined(separator: "  ·  "), action: nil, keyEquivalent: "")
         summary.isEnabled = false
@@ -897,29 +897,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         }
 
         let topCPU = Int(top.averageCPU.rounded())
-        var body = "Likely \(top.label)"
-        if let workerNoun = top.workerNoun, top.workers > 0 {
-            body += ": \(top.workers) \(workerNoun) averaging \(topCPU)% CPU."
+        var body = "Основной источник: \(top.label)"
+        if top.workers > 0 {
+            body += ": \(top.workers) задач со средней нагрузкой \(topCPU)% ЦП."
         } else {
-            body += ", averaging \(topCPU)% CPU."
+            body += ", средняя нагрузка: \(topCPU)% ЦП."
         }
         let normalizedTop = normalizedHeatContributorName(top.label)
         if let second = candidates.dropFirst().first(where: {
             $0.averageCPU >= 15 && $0.averageCPU >= top.averageCPU * 0.15
                 && normalizedHeatContributorName($0.label) != normalizedTop
         }) {
-            body += " \(second.label) is also contributing at \(Int(second.averageCPU.rounded()))% CPU."
+            body += " \(second.label) также потребляет \(Int(second.averageCPU.rounded()))% ЦП."
         }
         return body
     }
 
     private func postHeatNotification(body: String, at now: Date) {
         if heatDebugDryRun {
-            NSLog("%@", "Battery Hog Heat Watch dry run — Your Mac is heating up — \(body)")
+            NSLog("%@", "Battery Hog Heat Watch dry run — Ваш Mac нагревается — \(body)")
             return
         }
         let content = UNMutableNotificationContent()
-        content.title = "Your Mac is heating up"
+        content.title = "Ваш Mac нагревается"
         content.body = body
         content.sound = .default
         content.categoryIdentifier = heatNotificationCategory
@@ -1128,7 +1128,7 @@ enum BatteryHogApplication {
         let appItem = NSMenuItem()
         mainMenu.addItem(appItem)
         let appMenu = NSMenu()
-        let updateItem = NSMenuItem(title: "Check for Updates…",
+        let updateItem = NSMenuItem(title: "Проверить обновления…",
                                     action: #selector(AppDelegate.checkForUpdates(_:)),
                                     keyEquivalent: "")
         updateItem.target = delegate
