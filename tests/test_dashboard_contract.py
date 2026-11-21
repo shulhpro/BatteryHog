@@ -206,9 +206,9 @@ class DashboardContractTests(unittest.TestCase):
         self.assertIn("img-src appicon: data:", policies[0])
 
     def test_app_impact_is_clearly_labeled_as_an_estimate(self):
-        self.assertIn("Estimated impact", self.html)
-        self.assertIn("Relative CPU + memory estimate", self.html)
-        self.assertIn("not per-app watts", self.html)
+        self.assertIn("Оценка влияния", self.html)
+        self.assertIn("Относительная оценка CPU + памяти", self.html)
+        self.assertIn("не ватты на каждое приложение", self.html)
         for misleading_label in (
             "Energy impact", "Energy leaders", "Ranked by impact",
             "biggest battery user", "Biggest draws right now", '+" impact"',
@@ -294,7 +294,7 @@ class DashboardContractTests(unittest.TestCase):
         self.assertEqual(switch.get("role"), "switch")
         self.assertEqual(switch.get("tabindex"), "0")
         self.assertEqual(switch.get("aria-checked"), "false")
-        self.assertIn("Off by default", self.html)
+        self.assertIn("Выключено по умолчанию", self.html)
 
         for name in (
             "postUpdateAction", "requestUpdateState", "renderSoftwareUpdates",
@@ -369,8 +369,8 @@ class DashboardContractTests(unittest.TestCase):
         self.assertNotIn("charge horizon", self.html.lower())
         self.assertRegex(
             self.html,
-            r'class="current-energy-rail"\s*>\s*<span>Empty</span>'
-            r'\s*<span>Battery level</span>\s*<span>Full</span>',
+            r'class="current-energy-rail"\s*>\s*<span>Пусто</span>'
+            r'\s*<span>Уровень заряда</span>\s*<span>Полный</span>',
         )
         self.assertRegex(
             self.html,

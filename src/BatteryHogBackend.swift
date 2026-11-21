@@ -1048,7 +1048,7 @@ final class BatteryHogBackend {
 
             if onAC, let percent, percent >= 100 {
                 if !fullAlerted {
-                    notifications.append(("Fully charged", "Unplug when you can to ease battery wear."))
+                    notifications.append(("Полный заряд", "Отключите от сети для продления срока службы аккумулятора."))
                     fullAlerted = true
                 }
             } else if !onAC || (percent != nil && percent! < 98) { fullAlerted = false }
@@ -1060,7 +1060,7 @@ final class BatteryHogBackend {
                       let cpu = (process["cpu"] as? NSNumber)?.doubleValue, cpu >= 95 else { continue }
                 hot.insert(name)
                 if !hotProcesses.contains(name) {
-                    notifications.append(("High CPU", "\(name) is using \(Int(cpu.rounded()))% CPU."))
+                    notifications.append(("Высокая нагрузка на процессор", "\(name) использует \(Int(cpu.rounded()))% CPU."))
                 }
             }
             hotProcesses = hot
@@ -1071,8 +1071,8 @@ final class BatteryHogBackend {
                     let summary = processData["summary"] as? [String: Any] ?? [:]
                     let active = (summary["active_workers"] as? NSNumber)?.intValue ?? 0
                     let projects = (summary["projects"] as? NSNumber)?.intValue ?? 0
-                    notifications.append(("Heavy battery draw",
-                        "\(Int(watts.rounded())) W with \(active) active dev workers across \(projects) projects."))
+                    notifications.append(("Высокий расход батареи",
+                        "\(Int(watts.rounded())) Вт: \(active) активных процессов разработки в \(projects) проектах."))
                     highDrawAlerted = true
                 }
             } else {

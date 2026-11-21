@@ -438,7 +438,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
             b.imagePosition = .imageLeading
         }
         let menu = NSMenu()
-        menu.addItem(NSMenuItem(title: "Starting…", action: nil, keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Запуск…", action: nil, keyEquivalent: ""))
         statusItem.menu = menu
     }
 
@@ -521,7 +521,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         menu.addItem(summary)
         menu.addItem(.separator())
 
-        let hdr = NSMenuItem(title: "Apps by estimated impact", action: nil, keyEquivalent: "")
+        let hdr = NSMenuItem(title: "Приложения по расходу энергии", action: nil, keyEquivalent: "")
         hdr.isEnabled = false
         menu.addItem(hdr)
 
@@ -536,7 +536,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
                 item.isEnabled = false
             } else {
                 let sub = NSMenu()
-                let q = NSMenuItem(title: "Quit \(name)", action: #selector(quitProcess(_:)), keyEquivalent: "")
+                let q = NSMenuItem(title: "Завершить \(name)", action: #selector(quitProcess(_:)), keyEquivalent: "")
                 q.target = self
                 q.representedObject = ["name": name,
                                        "path": p["path"] as? String ?? "",
@@ -553,28 +553,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
             menu.addItem(.separator())
             let workers = dev["active_workers"] as? Int ?? 0
             let heavy = dev["heavy_workers"] as? Int ?? 0
-            let item = NSMenuItem(title: "Development   \(projects) projects · \(workers) active · \(heavy) heavy",
+            let item = NSMenuItem(title: "Разработка   проектов: \(projects) · активных: \(workers) · тяжёлых: \(heavy)",
                                   action: #selector(showWorkloads(_:)), keyEquivalent: "")
             item.target = self
             menu.addItem(item)
         }
 
         menu.addItem(.separator())
-        let lpm = NSMenuItem(title: "Low Power Mode", action: #selector(toggleLPM(_:)), keyEquivalent: "")
+        let lpm = NSMenuItem(title: "Режим энергосбережения", action: #selector(toggleLPM(_:)), keyEquivalent: "")
         lpm.target = self
         lpm.state = (lastLowPower == true) ? .on : .off
         if lastLowPower == nil { lpm.isEnabled = false }
         menu.addItem(lpm)
 
         menu.addItem(.separator())
-        let show = NSMenuItem(title: "Open Dashboard", action: #selector(showDashboard(_:)), keyEquivalent: "")
+        let show = NSMenuItem(title: "Открыть панель управления", action: #selector(showDashboard(_:)), keyEquivalent: "")
         show.target = self
         menu.addItem(show)
-        let updates = NSMenuItem(title: "Check for Updates…",
+        let updates = NSMenuItem(title: "Проверить обновления…",
                                  action: #selector(checkForUpdates(_:)), keyEquivalent: "")
         updates.target = self
         menu.addItem(updates)
-        menu.addItem(NSMenuItem(title: "Quit Battery Hog",
+        menu.addItem(NSMenuItem(title: "Завершить Battery Hog",
                                 action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         statusItem.menu = menu
     }
@@ -583,10 +583,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         guard let d = sender.representedObject as? [String: Any],
               let name = d["name"] as? String else { return }
         let a = NSAlert()
-        a.messageText = "Quit \(name)?"
+        a.messageText = "Завершить «\(name)»?"
         a.informativeText = "It will be asked to close — save your work first."
-        a.addButton(withTitle: "Quit")
-        a.addButton(withTitle: "Cancel")
+        a.addButton(withTitle: "Завершить")
+        a.addButton(withTitle: "Отмена")
         if a.runModal() == .alertFirstButtonReturn {
             backendPOST("/api/kill", ["name": name,
                                       "path": d["path"] ?? "",
@@ -620,9 +620,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         let center = UNUserNotificationCenter.current()
         center.delegate = self
         let open = UNNotificationAction(identifier: heatOpenAction,
-                                        title: "Open Workloads", options: [.foreground])
+                                        title: "Открыть нагрузки", options: [.foreground])
         let snooze = UNNotificationAction(identifier: heatSnoozeAction,
-                                          title: "Snooze 1 hour", options: [])
+                                          title: "Отложить на 1 час", options: [])
         let category = UNNotificationCategory(identifier: heatNotificationCategory,
                                               actions: [open, snooze],
                                               intentIdentifiers: [], options: [])
@@ -893,7 +893,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
     private func heatNotificationBody(at now: Date) -> String {
         let candidates = heatCandidates(at: now)
         guard let top = candidates.first else {
-            return "Thermal pressure has stayed elevated. Open Workloads to see what is active."
+            return "Температурная нагрузка повышена. Откройте «Нагрузки», чтобы увидеть активные процессы."
         }
 
         let topCPU = Int(top.averageCPU.rounded())
@@ -1134,19 +1134,19 @@ enum BatteryHogApplication {
         updateItem.target = delegate
         appMenu.addItem(updateItem)
         appMenu.addItem(NSMenuItem.separator())
-        appMenu.addItem(withTitle: "Hide Battery Hog",
+        appMenu.addItem(withTitle: "Скрыть Battery Hog",
                         action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
         appMenu.addItem(NSMenuItem.separator())
-        appMenu.addItem(withTitle: "Quit Battery Hog",
+        appMenu.addItem(withTitle: "Завершить Battery Hog",
                         action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         appItem.submenu = appMenu
 
         let windowItem = NSMenuItem()
         mainMenu.addItem(windowItem)
-        let windowMenu = NSMenu(title: "Window")
-        windowMenu.addItem(withTitle: "Close", action: #selector(NSWindow.performClose(_:)),
+        let windowMenu = NSMenu(title: "Окно")
+        windowMenu.addItem(withTitle: "Закрыть", action: #selector(NSWindow.performClose(_:)),
                            keyEquivalent: "w")
-        windowMenu.addItem(withTitle: "Minimize",
+        windowMenu.addItem(withTitle: "Свернуть",
                            action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
         windowItem.submenu = windowMenu
 
